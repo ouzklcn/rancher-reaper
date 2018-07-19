@@ -1,0 +1,16 @@
+version: '2'
+catalog:
+  name: "Rancher Reaper"
+  version: "0.5.0"
+  description: "Automatically delete hosts from Rancher if they have been terminated in AWS."
+services:
+  rancher-reaper:
+    scale: 1
+    health_check:
+      port: 3000
+      interval: 2000
+      unhealthy_threshold: 3
+      strategy: recreate
+      response_timeout: 2000
+      request_line: GET / HTTP/1.0
+      healthy_threshold: 2

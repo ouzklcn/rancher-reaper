@@ -42,7 +42,7 @@ For example:
 ```shell
 $ sudo docker run -d --privileged -v /var/run/docker.sock:/var/run/docker.sock \
     -e CATTLE_HOST_LABELS="aws.instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)&aws.availability_zone=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)" \
-    rancher/agent:v1.0.2 http://<rancher-server>/v1/scripts/<registrationToken>
+    rancher/agent:v1.2.7 http://<rancher-server>/v1/scripts/<registrationToken>
 ```
 
 The names of these labels can be configured through environment variables.
@@ -50,6 +50,7 @@ See the configuration documentation below for more details.
 
 
 ## Running the Service
+### Rancher Compose
 You will generally run one instance of this container in each Rancher environment.The following Rancher config should provide you with a good starting point:
 
 docker-compose.yml:
@@ -57,9 +58,6 @@ docker-compose.yml:
 rancher-reaper:
   image: ampedandwired/rancher-reaper:latest
   tty: true
-  environment:
-    AWS_ACCESS_KEY_ID: ${AccessKeyId}
-    AWS_SECRET_ACCESS_KEY: ${SecretAccessKey}
   labels:
     io.rancher.container.create_agent: 'true'
     io.rancher.container.agent.role: environment
@@ -84,14 +82,25 @@ This container requires the following environment variables to be set:
 * `CATTLE_URL`
 * `CATTLE_ACCESS_KEY`
 * `CATTLE_SECRET_KEY`
-* `AWS_ACCESS_KEY_ID`
-* `AWS_SECRET_ACCESS_KEY`
 
 The easiest way to set the `CATTLE_*` variables is to set up your container with a [service account](http://docs.rancher.com/rancher/v1.2/en/rancher-services/service-accounts/) by applying the following labels:
 ```yaml
 io.rancher.container.create_agent: true
 io.rancher.container.agent.role: environment
 ```
+
+
+### Rancher Catalog (UI)
+Add this repository as a catalog to your rancher instance:
+
+Open Rancher
+Select Admin in the navigation
+Select Settings
+In the Catalog section you can add this catalog by entering a name (e.g. rancher-reaper), the URL to this repository and a branch.
+
+Afterwards you will be able to select the new catalog from the Catalog menu item in the navigation. There you will find the Rancher Reaper. By clicking View Details you can configure the service to your needs and then launch it.
+
+## AWS IAM Role
 
 The `AWS_*` variables should contain AWS API keys that have `ec2:DescribeInstances` and `ec2:DescribeRegions` permissions on all resources.
 Use this IAM policy as a guide:
